@@ -1,0 +1,83 @@
+**EXPLORATORY DATA ANALYSIS**
+
+------CHECK THE  NUMBER OF UNIQUE APP IN BOTH TABLES  
+
+ SELECT COUNT(DISTINCT ID) AS UNIQUEAPPIDS
+ FROM AppleStore
+
+ SELECT COUNT(DISTINCT ID) AS UNIQUEAPPIDS
+ FROM appleStore_description
+ 
+ 
+ -------CHECK OF ANY MISSING VALUES IN KEY FIELDS
+ 
+ SELECT COUNT(*) AS MISSING_VALUES
+ FROM AppleStore
+ WHERE track_name IS NULL OR user_rating IS NULL OR prime_genre IS NULL
+
+ SELECT COUNT(*) AS MISSING_VALUES
+ FROM appleStore_description
+ WHERE track_name IS NULL OR app_desc IS NULL 
+ 
+ 
+ -------FIND OUT THE NUMBER OF PER GENRE
+ 
+ SELECT prime_genre, COUNT(ID) AS NUMAPPS 
+ FROM AppleStore
+ GROUP BY prime_genre
+ ORDER BY NUMAPPS DESC
+ 
+ ------GET AN OVERVIEW OF APP RATINGS 
+ 
+ SELECT
+ MIN(user_rating) AS minRating,
+ MAX(user_rating) as maxRating,
+ AVG(user_rating) AS AvgRating
+ FROM AppleStore
+ 
+ 
+ **DATA ANALYSIS**
+
+
+------CHECK THE TOP RATED APPS FOR EACH GENRE 
+
+SELECT
+       prime_genre,
+       track_name,
+       user_rating 
+FROM (
+  SELECT 
+        track_name,
+        prime_genre,
+        user_rating, 
+        RANK() OVER (PARTITION BY prime_genre ORDER BY user_rating DESC,rating_count_tot DESC) AS RANK
+        FROM AppleStore) 
+WHERE RANK = 1
+
+ 
+ --------DETERMINE WHETHER PAID APPS HAVE HIGHER RATINGS THEN FREE APPS 
+ 
+ SELECT CASE 
+           WHEN PRICE > 0 THEN 'PAID' 
+           ELSE 'FREE' END AS APP_TYPE,
+           AVG(user_rating) AS AvgRating 
+ from AppleStore
+ group by APP_TYPE 
+ 
+ ------CHECK IF APPS WITH MORE SUPPORTED LANGUAGES HAVE HIGHER RATINGS 
+ 
+ SELECT CASE 
+           WHEN lang_num < 10 THEN '<10 LANG'
+           WHEN lang_num BETWEEN 10 AND 30 THEN '10-30 LANG'
+           ELSE '30+ LANG' END AS LANG_BUCKET,
+           AVG(user_rating) AS AVGratings
+ FROM AppleStore
+ GROUP BY LANG_BUCKET
+ 
+ 
+ ------CHECK GENRE WITH LOW RATINGS 
+ 
+SELECT prime_genre, Avg(user_rating) AVG_RATINGS
+FROM AppleStore
+GROUP BY prime_genre
+ORDER BY AVG_RATINGS ASC 
